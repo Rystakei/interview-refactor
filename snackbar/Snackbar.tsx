@@ -1,72 +1,50 @@
-import React, { useState } from 'react';
-import { SnackBarProps, Announcement } from './SnackBar.types';
+import React, { useState } from "react";
+import { SnackBarProps, Announcement, SnackBarClasses } from "./SnackBar.types";
+import { DefaultVariant, SuperLargeVariant } from "./SnackbarVariants";
 
 const SnackBar = ({
   id,
   message,
   announcements = [],
   closable = false,
-  variant = 'default',
+  variant = "default",
   classNames,
 }: SnackBarProps) => {
-  const [IsVisible, setIsVisible] = useState(true);
-  const [idx, setIdx] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
 
-  const [HasAnnouncements, setHasAnnouncements] = useState(
-    announcements.length > 0,
-  );
+  // Always use first announcement since functionality for changing announcements not implemented
+  // Previously had idx state but setIdx was never used
+  const activeAnnouncement: Announcement | undefined =
+    announcements.length > 0 ? announcements[0] : undefined;
 
-  if (IsVisible === false || IsVisible === null) {
+  if (isVisible === false || isVisible === null) {
     return null;
   }
 
-  const activeAnnouncement: Announcement | undefined =
-    announcements.length > 0 ? announcements[idx] : undefined;
-
-  const getMessageText = () => {
+  const getMessageText = (): string => {
     if (activeAnnouncement && activeAnnouncement.message) {
       return activeAnnouncement.message;
     }
-    return message;
+    return message || "";
   };
 
   const CloseSnackBar = () => {
     setIsVisible(false);
   };
 
-  if (variant === 'super_large') {
+  const messageText = getMessageText();
+
+  if (variant === "super_large") {
     return (
-      <section
-        className={classNames.root}
-        data-id={id}
-        data-variant={variant}
-      >
-        <div className={classNames.container}>
-          <header className="mb-2">
-            <div className={classNames.overline}>
-              {activeAnnouncement?.overline || 'Announcement'}
-            </div>
-          </header>
-
-          <div className="flex flex-col gap-4">
-            <div className={classNames.message}>
-              {activeAnnouncement?.message || message}
-            </div>
-
-            <div className="flex justify-end">
-              {closable && (
-                <button
-                  className={classNames.close}
-                  onClick={() => CloseSnackBar()}
-                  aria-label="Close"
-                >
-                  Dismiss
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
+      <SuperLargeVariant
+        id={id}
+        activeAnnouncement={activeAnnouncement}
+        variant={variant}
+        classNames={classNames}
+        closable={closable}
+        messageText={messageText}
+        onClose={CloseSnackBar}
+      />
     );
   }
 
@@ -74,37 +52,15 @@ const SnackBar = ({
    * Default variant
    */
   return (
-    <section
-      className={classNames.root}
-      data-id={id}
-      data-variant={variant}
-    >
-      <div className={classNames.container}>
-        <div className={classNames.content}>
-          {activeAnnouncement?.overline && (
-            <div className={classNames.overline}>
-              {activeAnnouncement.overline}
-            </div>
-          )}
-
-          <div className={classNames.message}>
-            {getMessageText()}
-          </div>
-        </div>
-
-        {closable && (
-          <button
-            className={classNames.close}
-            onClick={() => {
-              setIsVisible(false);
-            }}
-            aria-label="Close"
-          >
-            ✕
-          </button>
-        )}
-      </div>
-    </section>
+    <DefaultVariant
+      id={id}
+      classNames={classNames}
+      variant={variant}
+      activeAnnouncement={activeAnnouncement}
+      closable={closable}
+      messageText={messageText}
+      onClose={() => setIsVisible(false)}
+    />
   );
 };
 
